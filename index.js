@@ -3,13 +3,24 @@
 const prompts = require('prompts');
 const path = require('path');
 const fs = require('fs-extra');
+const kleur = require('kleur');
 const tcpPortUsed = require('tcp-port-used');
-
-const SERVER_ROOT = process.env.SERVER_ROOT || '/';
-prompts.override(require('yargs').argv);
+const helpers = require('./helpers');
+const yargs = require('yargs/yargs')
+const { hideBin } = require('yargs/helpers')
+const argv = yargs(hideBin(process.argv)).argv
+if(argv.debug) {
+  console.log(kleur.yellow().underline('Debugging is ON'));
+}
+const SERVER_ROOT = (argv.debug) ? path.join(__dirname, 'fakeServer') : '/';
+prompts.override(argv);
 
 (async () => {
    
+  if(!await helpers.isNginxInstalled()) {
+    await helpers.installNginx();
+  }
+
   const response = await prompts([
     {
       type: 'select',
@@ -51,14 +62,17 @@ prompts.override(require('yargs').argv);
         return true;
       }
     }
-  ]);
+  ], {
+    onCancel: ()=>{
+      process.exit(1);
+    }
+  });
 
   let nginxConfig =  fs.readFileSync(path.join(__dirname, `nginx/${response.appType}.template`), 'utf8');
 
   for (const [key, value] of Object.entries(response)) {
     nginxConfig = nginxConfig.replaceAll(`{{${key}}}`, value);
   }
-
 
   fs.outputFileSync(path.join(SERVER_ROOT,'etc/nginx/sites-available', response.appDomain), nginxConfig);
 
@@ -69,7 +83,13 @@ prompts.override(require('yargs').argv);
     );
   } 
 
+  if(response.appType = 'nodejs') {
+    await helpers.allowInUFW(response.appPort);
+  }
 
-  console.log(`✔ Everthing ready,\nrun "nginx -t" to check if no error has been made\nand then run "service nginx reload" to apply the change`)
-
+  if(!await helpers.reloadNginx()) {
+    console.log(`${kleur.red("✖")} An unexpected error occured\nTry "nginx -t" to debug or leave an issue`);
+  }else{
+    console.log(`${kleur.green("✔")} Everthing ready`);
+  }
 })();
