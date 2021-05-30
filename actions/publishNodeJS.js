@@ -68,12 +68,11 @@ module.exports = {
       await helpers.allowInUFW(app.port);
 
       let result;
-      if(!(result = await helpers.reloadNginx()).success)
+      if (!(result = await helpers.reloadNginx()).success) {
         console.log(`${kleur.red("✖")} An unexpected error occured\nTry "nginx -t" to debug or leave an issue\n`, result.message);
       } else {
         console.log(`${kleur.green("✔")} Everthing ready, make sure to add an A record to ${await publicIp.v4()}`);
       }
     }
-
   }
 }

@@ -16,7 +16,9 @@ const SUCCEEDED = {
 const SUCCEEDED_ICON = kleur.green("✔");
 const aptUpdate = async () => {
   try {
-    const { stdout } = await exec('apt update');
+    const {
+      stdout
+    } = await exec('apt update');
     return {
       ...SUCCEEDED,
       message: stdout,
@@ -31,29 +33,36 @@ const aptUpdate = async () => {
 
 const isNginxInstalled = async () => {
   try {
-    const { stdout } = await exec('which nginx');
-    if(stdout) return true;
+    const {
+      stdout
+    } = await exec('which nginx');
+    if (stdout) return true;
     return false;
   } catch (error) {
     return false
-  } 
+  }
 }
 
 const isUFWInstalled = async () => {
   try {
-    const { stdout } = await exec('which ufw');
-    if(stdout) return true;
+    const {
+      stdout
+    } = await exec('which ufw');
+    if (stdout) return true;
     return false;
   } catch (error) {
     return false
-  } 
+  }
 }
 
 const installNginx = async () => {
   let result;
-  if(!(result = await aptUpdate()).success) return result;
+  if (!(result = await aptUpdate()).success) return result;
   try {
-    const { stdout, stderr } = await exec('apt install nginx');
+    const {
+      stdout,
+      stderr
+    } = await exec('apt install nginx');
 
     await allowInUFW('Nginx Full');
     return {
@@ -69,11 +78,14 @@ const installNginx = async () => {
 }
 
 const allowInUFW = async (name) => {
-  if(!await isUFWInstalled()) return FAILED;
+  if (!await isUFWInstalled()) return FAILED;
 
   try {
-    const { stdout, stderr } = await exec('ufw allow "${name}"');
-    if(stderr) return false;
+    const {
+      stdout,
+      stderr
+    } = await exec('ufw allow "${name}"');
+    if (stderr) return false;
     return {
       ...SUCCEEDED,
       message: stdout,
@@ -88,9 +100,11 @@ const allowInUFW = async (name) => {
 
 const checkNginxConfig = async () => {
   try {
-    const { stderr } = await exec('nginx -t');
+    const {
+      stderr
+    } = await exec('nginx -t');
     const lines = stderr.trim().replace(/(\r\n|\r|\n)/g, '\n').split("\n");
-    if(lines[0].endsWith('ok') && lines[1].endsWith('successful')) return SUCCEEDED;
+    if (lines[0].endsWith('ok') && lines[1].endsWith('successful')) return SUCCEEDED;
     return {
       ...FAILED,
       message: stderr,
@@ -100,14 +114,17 @@ const checkNginxConfig = async () => {
       ...FAILED,
       message: error.stderr,
     };
-  } 
+  }
 }
 
 const reloadNginx = async (name) => {
-  if(!await checkNginxConfig()) return false;
+  if (!await checkNginxConfig()) return false;
   try {
-    const { stdout, stderr } = await exec('service nginx reload');
-    if(stderr) return {
+    const {
+      stdout,
+      stderr
+    } = await exec('service nginx reload');
+    if (stderr) return {
       ...FAILED,
       message: stderr,
     };
