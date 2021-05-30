@@ -1,95 +1,61 @@
 #!/usr/bin/env node
 (require('dotenv')).config();
-const prompts = require('prompts');
-const path = require('path');
-const fs = require('fs-extra');
-const kleur = require('kleur');
-const tcpPortUsed = require('tcp-port-used');
-const helpers = require('./helpers');
 const yargs = require('yargs/yargs')
 const { hideBin } = require('yargs/helpers')
+const {version} = require('./package.json');
+const prompts = require('prompts');
+const path = require('path');
+const kleur = require('kleur');
+
+
 const argv = yargs(hideBin(process.argv)).argv
 if(argv.debug) {
   console.log(kleur.yellow().underline('Debugging is ON'));
 }
-const SERVER_ROOT = (argv.debug) ? path.join(__dirname, 'fakeServer') : '/';
-prompts.override(argv);
+process.env.SERVER_ROOT = (argv.debug) ? path.join(__dirname, 'fakeServer') : '/';
+
+const helpers = require('./helpers');
+const actions = require('./actions');
+
+
+const chooseAction = (choices) => {
+  return new Promise((resolve, reject)=>{
+    prompts({
+      type: 'select',
+      name: 'action',
+      message: 'Which action do you want to perform',
+      choices,
+      initial: 1,
+    }, {
+      onSubmit: (prompt, answer) => {
+        resolve(prompt.choices.find(({value}) => value == answer));
+      },
+      onCancel: process.exit
+    });
+  })
+}
 
 (async () => {
-   
-  if(!await helpers.isNginxInstalled()) {
-    await helpers.installNginx();
-  }
+  console.log(`================================`);
+  console.log(kleur.italic().underline().bold('Ezyo Server Manager'));
+  console.log(kleur.italic().dim(`v${version}`));
+  console.log(`================================`);
 
-  const response = await prompts([
-    {
-      type: 'select',
-      name: 'appType',
-      message: 'Pick an app type',
-      choices: [
-        { title: 'Static', description: 'Static HTML, CSS, JS app. No executable or compilation', value: 'static' },
-        { title: 'NodeJS', description: 'NodeJS Server', value: 'nodejs' },
-      ],
-      initial: 1
-    },
-    {
-      type: 'text',
-      name: 'appPath',
-      message: 'Where is located the app',
-      initial: SERVER_ROOT,
-      validate: (input) => {
-        const normalizedInput = path.normalize(input);
-    
-        if(!path.isAbsolute(normalizedInput)) return "The path should be absolute";
-    
-        if (!fs.existsSync(normalizedInput)) return "This path do not exists ("+normalizedInput+")";
-    
-        return true;
-      },
-    },
-    {
-      type: 'text',
-      name: 'appDomain',
-      message: 'What is the app domain',
-    },
-    {
-      type: (_, values) => values.appType=='nodejs'?'number':null,
-      name: 'appPort',
-      message: 'What is the app port',
-      initial: 3000,
-      validate: async (input) => {
-        if(await tcpPortUsed.check(input)) return 'Port already in use';
-        return true;
-      }
+  if(argv.action) {
+    const action = actions.find(({value}) => value == argv.action);
+    if(action) {
+      prompts.override(argv);
+      await action.execute();
+      prompts.override({}) // Clear prefilled answers
     }
-  ], {
-    onCancel: ()=>{
-      process.exit(1);
+    
+  }
+
+  while(true) {
+    console.log('\n');
+    const action = await chooseAction(actions);
+    if(action) {
+      await action.execute();
     }
-  });
-
-  let nginxConfig =  fs.readFileSync(path.join(__dirname, `nginx/${response.appType}.template`), 'utf8');
-
-  for (const [key, value] of Object.entries(response)) {
-    nginxConfig = nginxConfig.replaceAll(`{{${key}}}`, value);
-  }
-
-  fs.outputFileSync(path.join(SERVER_ROOT,'etc/nginx/sites-available', response.appDomain), nginxConfig);
-
-  if(!fs.existsSync(path.join(SERVER_ROOT,'etc/nginx/sites-enabled', response.appDomain))) {
-    fs.symlinkSync(
-      path.join(SERVER_ROOT,'etc/nginx/sites-available', response.appDomain),
-      path.join(SERVER_ROOT,'etc/nginx/sites-enabled', response.appDomain)
-    );
-  } 
-
-  if(response.appType = 'nodejs') {
-    await helpers.allowInUFW(response.appPort);
-  }
-
-  if(!await helpers.reloadNginx()) {
-    console.log(`${kleur.red("✖")} An unexpected error occured\nTry "nginx -t" to debug or leave an issue`);
-  }else{
-    console.log(`${kleur.green("✔")} Everthing ready`);
   }
 })();
