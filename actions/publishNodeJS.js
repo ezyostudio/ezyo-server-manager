@@ -13,7 +13,7 @@ module.exports = {
   execute: async () => {
     if (!await helpers.isNginxInstalled()) {
       console.log(helpers.FAILED_ICON, 'Nginx is required for this action');
-      // return;
+      return;
     }
 
     const app = await prompts([{

@@ -2,10 +2,10 @@ server {
   listen 80;
   listen [::]:80;
 
-  root {{appPath}};
+  root {{path}};
   index index.html index.htm;
 
-  server_name {{appDomain}};
+  server_name {{domain}};
 
   location / {
           try_files $uri $uri/ =404;
