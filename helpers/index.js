@@ -10,7 +10,7 @@ const FAILED_ICON = kleur.red("✖");
 
 
 const SUCCEEDED = {
-  success: false,
+  success: true,
   message: ''
 };
 const SUCCEEDED_ICON = kleur.green("✔");
