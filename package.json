@@ -1,0 +1,25 @@
+{
+    "name": "ezyo-server-manager",
+    "version": "1.0.0",
+    "main": "index.js",
+    "bin": "index.js",
+    "repository": "https://github.com/ezyostudio/ezyo-server-manager.git",
+    "author": "Zao Soula <contact@zaosoula.fr>",
+    "license": "MIT",
+    "type": "module",
+    "dependencies": {
+        "kleur": "^4.1.4",
+        "prompts": "^2.4.2",
+        "shelljs": "^0.8.4"
+    },
+    "devDependencies": {
+        "pkg": "^5.4.0"
+    },
+    "pkg": {
+        "scripts": [
+            "actions/**/*",
+            "utils/**/*"
+        ],
+        "outputPath": "dist"
+    }
+}
