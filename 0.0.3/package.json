@@ -21,7 +21,11 @@
     "yargs": "17.0.1"
   },
   "pkg": {
-    "assets": ["nginx/**/*", "helpers/**/*", "actions/**/*"],
+    "assets": [
+      "nginx/**/*",
+      "helpers/**/*",
+      "actions/**/*"
+    ],
     "outputPath": "dist"
   }
 }
