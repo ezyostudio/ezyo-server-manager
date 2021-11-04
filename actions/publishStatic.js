@@ -6,7 +6,6 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { fail, success } from '../utils/index.js';
 
-
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -15,6 +14,7 @@ export default {
   description: 'Generate a Nginx config for a static app',
   value: 'publishStatic',
   execute: async () => {
+
     if (!shell.which('nginx')) {
       fail('Nginx is required for this action');
       return;
@@ -44,9 +44,10 @@ export default {
 
     if (app.path && app.domain) {
       let nginxConfig = fs.readFileSync(path.join(__dirname, `../nginx/static.template`), 'utf8');
-
+      console.log(nginxConfig);
       for (const [key, value] of Object.entries(app)) {
-        nginxConfig = nginxConfig.replaceAll(`{{${key}}}`, value);
+        const reg = new RegExp(`{{${key}}}`, 'g')
+        nginxConfig = nginxConfig.replace(reg, value);
       }
 
       fs.outputFileSync(path.join(process.env.SERVER_ROOT, 'etc/nginx/sites-available', app.domain), nginxConfig);
