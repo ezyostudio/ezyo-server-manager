@@ -13,7 +13,7 @@ export default {
   execute: async () => {
     if (!shell.which('nginx')) {
       fail('Nginx is required for this action');
-      //return;
+      return;
     }
 
     const app = await prompts([{
