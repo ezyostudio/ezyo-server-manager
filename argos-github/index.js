@@ -21,7 +21,9 @@ import localtunnel from 'localtunnel';
 const app = new Koa();
 
 app.use(async ctx => {
-    const webhook = await ctx.req
+    const response = ctx.req
+    const webhook = await response.json()
+
     console.log("=======NEW WEBHOOK=======")
     console.log(webhook)
 });
