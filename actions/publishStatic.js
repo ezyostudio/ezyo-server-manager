@@ -5,6 +5,7 @@ import fs from 'fs-extra';
 import publicIp from 'public-ip';
 import { fail, success } from '../utils/index.js';
 
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 export default {
   title: 'Publish a static app',
