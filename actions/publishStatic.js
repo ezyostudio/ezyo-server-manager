@@ -1,12 +1,14 @@
 import shell from 'shelljs';
 import prompts from 'prompts';
-import { path, dirname } from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
 import publicIp from 'public-ip';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import { fail, success } from '../utils/index.js';
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export default {
   title: 'Publish a static app',
