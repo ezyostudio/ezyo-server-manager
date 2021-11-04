@@ -1,6 +1,7 @@
 import shell from 'shelljs';
 import prompts from 'prompts';
-import path from 'path';
+import { path, dirname } from 'path';
+import { fileURLToPath } from 'url';
 import fs from 'fs-extra';
 import publicIp from 'public-ip';
 import { fail, success } from '../utils/index.js';
