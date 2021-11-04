@@ -4,7 +4,7 @@ import fs from 'fs-extra';
 import publicIp from 'public-ip';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { fail, success } from '../utils/index.js';
+import { fail, success, exec } from '../utils/index.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,20 +50,20 @@ export default {
         nginxConfig = nginxConfig.replace(reg, value);
       }
 
-      fs.outputFileSync(path.join(process.env.SERVER_ROOT, 'etc/nginx/sites-available', app.domain), nginxConfig);
+      fs.outputFileSync(path.join('/etc/nginx/sites-available', app.domain), nginxConfig);
 
-      if (!fs.existsSync(path.join(process.env.SERVER_ROOT, 'etc/nginx/sites-enabled', app.domain))) {
+      if (!fs.existsSync(path.join('/etc/nginx/sites-enabled', app.domain))) {
         fs.symlinkSync(
-          path.join(process.env.SERVER_ROOT, 'etc/nginx/sites-available', app.domain),
-          path.join(process.env.SERVER_ROOT, 'etc/nginx/sites-enabled', app.domain)
+          path.join('/etc/nginx/sites-available', app.domain),
+          path.join('/etc/nginx/sites-enabled', app.domain)
         );
       }
 
-      let result;
-      if (!(result = await helpers.reloadNginx()).success) {
-        fail(`An unexpected error occured\nTry "nginx -t" to debug or leave an issue\n`, result.message)
-      } else {
+      let { stdout, stderr, code } = exec("service nginx reload");
+      if (code == 0) {
         success(`Everthing ready, make sure to add an A record to ${await publicIp.v4()}`);
+      } else {
+        fail(`An unexpected error occured\nTry "nginx -t" to debug or leave an issue\n`, stderr)
       }
     }
   }
