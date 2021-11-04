@@ -11,7 +11,7 @@ export default {
             return;
         }
 
-        const { stdout, stderr, code } = exec('apt-get install nginx');
+        const { stdout, stderr, code } = exec('apt-get install nginx -y');
 
         if (code == 0) {
             success('Nginx is now installed');
