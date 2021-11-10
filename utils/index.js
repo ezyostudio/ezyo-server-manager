@@ -17,3 +17,24 @@ export const fail = (...args) => {
 export const exec = (command) => {
     return shell.exec(command, { silent: true });
 }
+
+export const allowInUFW = (name) => {
+    let which = exec('which ufw')
+    if (which.code != 0) {
+        return {success: false, message: which.stderr || which.stdout};
+    }
+    let allow = exec(`ufw allow '${name}'`)
+    if (allow.code != 0) {
+        return {success: false, message: which.stderr || which.stdout};
+    }
+    return {success: true, message: null};
+}
+
+export const enableUFW = () => {
+    let enable = exec('echo "y" | sudo ufw enable')
+    if (enable.code != 0) {
+        return {success: false, message: enable.stderr || enable.stdout}
+    } else {
+        return {success: true, message: null}
+    }
+}
