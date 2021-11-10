@@ -12,9 +12,17 @@ const router = new Router();
 
 const gitUrlExp = new RegExp('^((git|ssh|http(s)?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:/\-~]+)(\.git)(\/)?');
 const projectDir = '/var/www/ezyo-server-manager/';
+
+const defaultMeta = {
+  type: 'unknown',
+  repository: "",
+  createdDate: Date.now(),
+}
+
 router
   .get('/projects', ctx => {
     ctx.body = shell.ls('-d', `${projectDir}*`).map((projectPath) => ({
+        ...defaultMeta,
         path: projectPath,
         name: path.basename(projectPath),
         ...(fs.readJSONSync(path.join(projectPath, '.ezyoservermanager'), { throws: false }) || {})
@@ -43,12 +51,11 @@ router
     }
 
     const meta = {
-      type: 'unknown',
+      ...defaultMeta,
       repository,
-      createdDate: Date.now(),
     }
 
-    fs.writeJSONSync(path.join(projectDir, projectName, '.ezyoservermanager'), meta)
+    fs.writeJSONSync(path.join(projectDir, projectName, '.ezyoservermanager'), meta);
 
     ctx.body = {
       path: path.join(projectDir, projectName),
