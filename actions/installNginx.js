@@ -1,5 +1,5 @@
 import shell from 'shelljs';
-import { success, fail, exec, allowInUFW } from '../utils/index.js';
+import { success, fail, exec, allowInUFW, enableUFW} from '../utils/index.js';
 
 export default {
     title: 'Install NGINX',
@@ -25,7 +25,7 @@ export default {
         }
 
         if (shell.which('ufw')) {
-            success('ufw is already installed')
+            success('ufw is already installed');
         } else {
             const { stdout, stderr, code } = exec('apt-get install ufw -y');
 
@@ -40,11 +40,18 @@ export default {
             }
         }
 
-        let allow = allowInUFW('Nginx Full')
-        if (allow.success) {
-            success("ufw is correctly configured")
+        let enable = enableUFW();
+        if (enable.success) {
+            success("ufw is correctly enable");
         } else {
-            return fail('An error occurred: ', allow.message.trim())
+            return fail('An error occurred: ', enable.message.trim());
+        }
+
+        let allow = allowInUFW('Nginx Full');
+        if (allow.success) {
+            success("ufw is correctly configured");
+        } else {
+            return fail('An error occurred: ', allow.message.trim());
         }
     }
 };
