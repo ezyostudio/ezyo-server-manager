@@ -13,6 +13,11 @@ const router = new Router();
 const gitUrlExp = new RegExp('^((git|ssh|http(s)?)|(git@[\w\.]+))(:(\/\/)?)([\w\.@\:/\-~]+)(\.git)(\/)?');
 const projectDir = '/var/www/ezyo-server-manager/';
 
+const getMetaFilePath = (projectName) => 
+  path.isAbsolute(projectName) 
+  ? path.join(projectName, '.ezyoservermanager') 
+  : path.join(projectDir, projectName, '.ezyoservermanager');
+
 const defaultMeta = {
   type: 'unknown',
   repository: "",
@@ -25,7 +30,7 @@ router
         ...defaultMeta,
         path: projectPath,
         name: path.basename(projectPath),
-        ...(fs.readJSONSync(path.join(projectPath, '.ezyoservermanager'), { throws: false }) || {})
+        ...(fs.readJSONSync(getMetaFilePath(projectPath), { throws: false }) || {})
       }))
   })
   .post('/projects', ctx => {
@@ -55,7 +60,7 @@ router
       repository,
     }
 
-    fs.writeJSONSync(path.join(projectDir, projectName, '.ezyoservermanager'), meta);
+    fs.writeJSONSync(getMetaFilePath(projectName), meta);
 
     ctx.body = {
       path: path.join(projectDir, projectName),
