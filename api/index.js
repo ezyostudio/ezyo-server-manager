@@ -21,7 +21,7 @@ const getMetaFilePath = (projectName) =>
 const defaultMeta = {
   type: 'unknown',
   repository: "",
-  createdAt: Date.now(),
+  createdAt: 0,
 }
 
 router
@@ -57,6 +57,7 @@ router
 
     const meta = {
       ...defaultMeta,
+      createdAt: Date.now(),
       repository,
     }
 
