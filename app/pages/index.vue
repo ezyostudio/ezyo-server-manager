@@ -1,45 +1,42 @@
 <template>
-  <div class="row">
-    <div class="col-2">
-      <Sidebar />
-    </div>
-    <div class="col-10">
-      <Navbar />
+  <div>
+    <Navbar />
 
-      <div class="p-3 pe-4">
-        <div class="d-flex align-items-center justify-content-between">
-          <h2>Dashboard</h2>
+    <div class="p-5">
+      <div class="d-flex align-items-center justify-content-between">
+        <h2>Dashboard</h2>
 
-          <button class="py-2 px-3 d-flex align-items-center justify-content-center btn-dark text-light"
-            @click.prevent="displayForm">
-            <icon-github width="15px" height="15px" type="full" /> Add Repositories
-          </button>
+        <button class="py-2 px-3 d-flex align-items-center justify-content-center btn-dark text-light"
+          @click.prevent="displayForm">
+          <icon-github width="15px" height="15px" type="full" class="me-2" /> Add Repository
+        </button>
+      </div>
+
+      <div class="row mb-2">
+        <div class="col-3">
+          Name
         </div>
-
-        <div class="row mb-2">
-          <div class="col-3">
-            Name
-          </div>
-          <div class="col-3">
-            Created Date
-          </div>
-          <div class="col-3">
-            Type
-          </div>
+        <div class="col-3">
+          Created Date
         </div>
-
-        <div class="row py-1" v-for="project in projects" :key="project.name">
-          <hr>
-          <div class="col-3">{{project.name}}</div>
-          <div class="col-3">{{project.date || ""}}</div>
-          <div class="col-3">{{project.type}}</div>
-          <div class="col">
-            <a :href="project.repository" target="_blank"><icon-external width="20px" height="20px"/></a>
-          </div>
+        <div class="col-3">
+          Type
         </div>
       </div>
 
+      <div class="projects-table row py-1" v-for="project in projects" :key="project.name">
+        <hr>
+        <div class="col-3 project-name">{{project.name}}</div>
+        <div class="col-3">{{formatDate(project.createdAt) || ""}}</div>
+        <div class="col-3">{{project.type}}</div>
+        <div class="col">
+          <a v-show="project.repository" :href="project.repository" target="_blank">
+            <icon-external width="20px" height="20px" />
+          </a>
+        </div>
+      </div>
     </div>
+
   </div>
 </template>
 
@@ -67,18 +64,21 @@
 
   }
 
+  .projects-table {
+    .project-name {
+      text-transform: capitalize;
+    }
+  }
+
 </style>
 
 <script>
   export default {
-    async asyncData({ $axios }) {
-      const projects = await $axios.$get("http://localhost:3075/projects")
     async asyncData({
       $api
     }) {
       const projects = await $api.$get("/projects")
       console.log(projects)
-      return {projects}
       return { projects };
     },
     data() {
@@ -101,13 +101,11 @@
           confirmButtonText: 'Look up',
           showLoaderOnConfirm: true,
           preConfirm: (repository) => {
-            return this.$axios.$post("http://localhost:3075/projects", {
             return this.$api.$post("/projects", {
               repository
             })
           },
           allowOutsideClick: () => !this.$swal.isLoading()
-         })//.then((result) => {
         }) //.then((result) => {
         //   if (result.isConfirmed) {
         //     this.$swal.fire({

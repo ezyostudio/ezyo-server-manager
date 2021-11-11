@@ -1,22 +1,21 @@
 <template>
     <div>
- <nav class="d-flex align-items-center justify-content-end p-4">
-        <div class="text d-flex align-items-center">
-            <icon-search width="20px" height="15px" class="me-2"/>
-            <input type="text" placeholder="Search" class="w-100">
-        </div>
-        
-        <ul class="row m-0">
-            <li class="col nav-icon mx-1"><icon-setting width="20" height="20"/></li>
-        </ul>
-    </nav>
-    <hr class="text-muted">
-     </div>
-   
+        <nav class="d-flex align-items-center justify-content-end px-4 py-2">
+            <div class="input-container d-flex align-items-center m-0">
+                <icon-search width="20px" height="15px" class="me-2"/>
+                <input type="text" placeholder="Search" class="w-100">
+            </div>
+            
+            <ul class="row m-0">
+                <li class="col nav-icon mx-1"><icon-setting width="20" height="20"/></li>
+            </ul>
+        </nav>
+        <hr class="text-muted m-0" />
+    </div>
 </template>
 
 <style lang="scss" scoped>
-    .text {
+    .input-container {
         background: #F4F1F1;
         border-radius: 20px;
         min-width: 30%;
@@ -33,17 +32,21 @@
     }
 
     hr {
-        width: 100vw;
-        position: absolute;
-        left: 0;
+        width: 100%;
+        /* position: absolute;
+        left: 0; */
         color: #F4F1F1;
         border: 2px solid #e4e1e1;
     }
 
     .nav-icon {
-        padding: 8px 10px;
-        border-radius: 50%;
+        display: grid;
+        place-content: center;
+
         background: #F4F1F1;
+        border-radius: 50%;
+
+        aspect-ratio: 1;
         cursor: pointer;
 
         &:hover {

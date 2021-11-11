@@ -1,5 +1,5 @@
 <template>
-    <div class="sidebar p-4">
+    <div class="sidebar p-1">
         <h1 class="text-center mt-0">
             <Logo class="logo" />
         </h1>
@@ -14,6 +14,7 @@
     .sidebar {
         background: #F4F1F1;
         height: 100vh;
+        padding-top: 1em !important;
 
         .sidebar-content {
             height: 70vh;
@@ -21,7 +22,7 @@
 
         .logo {
             max-height: 30vh;
-            max-width: 150px;
+            max-width: 90%;
         }
 
     }
