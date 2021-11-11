@@ -7,6 +7,11 @@
     "author": "Zao Soula <contact@zaosoula.fr>",
     "license": "MIT",
     "type": "module",
+    "scripts": {
+        "start:api": "nodemon api/index.js",
+        "start:app": "cd app && yarn dev",
+        "dashboard": "npm-run-all --parallel start:*"
+    },
     "dependencies": {
         "@koa/cors": "^3.1.0",
         "fs-extra": "^10.0.0",
@@ -20,6 +25,7 @@
         "shelljs": "^0.8.4"
     },
     "devDependencies": {
+        "npm-run-all": "^4.1.5",
         "pkg": "^5.4.0"
     },
     "pkg": {
