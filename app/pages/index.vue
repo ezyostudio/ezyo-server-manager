@@ -73,8 +73,13 @@
   export default {
     async asyncData({ $axios }) {
       const projects = await $axios.$get("http://localhost:3075/projects")
+    async asyncData({
+      $api
+    }) {
+      const projects = await $api.$get("/projects")
       console.log(projects)
       return {projects}
+      return { projects };
     },
     data() {
       return {
@@ -97,11 +102,13 @@
           showLoaderOnConfirm: true,
           preConfirm: (repository) => {
             return this.$axios.$post("http://localhost:3075/projects", {
+            return this.$api.$post("/projects", {
               repository
             })
           },
           allowOutsideClick: () => !this.$swal.isLoading()
          })//.then((result) => {
+        }) //.then((result) => {
         //   if (result.isConfirmed) {
         //     this.$swal.fire({
         //       title: `${result.value.login}'s avatar`,
@@ -109,6 +116,9 @@
         //     })
         //   }
         // })
+      },
+      formatDate(date) {
+        return new Date(date).toLocaleDateString();
       }
     },
   }
