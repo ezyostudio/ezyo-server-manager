@@ -1,6 +1,6 @@
 <template>
   <div class="layout">
-    <Sidebar />
+    <Navbar />
     <Nuxt/>
   </div>
 </template>
@@ -9,5 +9,8 @@
   .layout {
     display: grid;
     grid-template-columns: 100px 1fr;
+    background-color: #f5f5fd;
+    min-height: 100vh;
+    max-width: 100vw;
   }
 </style>

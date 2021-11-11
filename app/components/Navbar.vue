@@ -1,56 +1,29 @@
 <template>
-    <div>
-        <nav class="d-flex align-items-center justify-content-end px-4 py-2">
-            <div class="input-container d-flex align-items-center m-0">
-                <icon-search width="20px" height="15px" class="me-2"/>
-                <input type="text" placeholder="Search" class="w-100">
-            </div>
-            
-            <ul class="row m-0">
-                <li class="col nav-icon mx-1"><icon-setting width="20" height="20"/></li>
+    <div class="sidebar p-1">
+        <h1 class="text-center mt-0">
+            <Logo class="logo" />
+        </h1>
+        <div class="sidebar-content d-flex flex-column justify-content-center">
+            <ul class="text-muted">
             </ul>
-        </nav>
-        <hr class="text-muted m-0" />
+        </div>
     </div>
 </template>
 
 <style lang="scss" scoped>
-    .input-container {
-        background: #F4F1F1;
-        border-radius: 20px;
-        min-width: 30%;
-        box-sizing: border-box;
-        padding: 1em 1.5rem;
+    .sidebar {
+        background: #ececf6;
+        height: 100vh;
+        padding-top: 1em !important;
 
-        input {
-            font-size: .8em;
-            outline: none;
-            border-radius: 20px;
-            background: #F4F1F1;
-            border: none;
+        .sidebar-content {
+            height: 70vh;
         }
-    }
 
-    hr {
-        width: 100%;
-        /* position: absolute;
-        left: 0; */
-        color: #F4F1F1;
-        border: 2px solid #e4e1e1;
-    }
-
-    .nav-icon {
-        display: grid;
-        place-content: center;
-
-        background: #F4F1F1;
-        border-radius: 50%;
-
-        aspect-ratio: 1;
-        cursor: pointer;
-
-        &:hover {
-            background: #eeebeb;
+        .logo {
+            max-height: 30vh;
+            max-width: 90%;
         }
+
     }
 </style>
