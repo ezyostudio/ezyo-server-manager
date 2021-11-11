@@ -199,9 +199,13 @@
         // })
       },
       getIcon(projectType) {
-        let iconName = 'nodejs';
+        let iconName = 'question-line';
         if (projectType.startsWith('node')) {
           iconName = 'nodejs';
+        }
+
+        if (projectType.startsWith('static')) {
+          iconName = 'folder';
         }
 
         return 'icon-' + iconName;
