@@ -1,6 +1,6 @@
 <template>
-  <div class="row me-5">
-    <div class="main p-5 col-md-9">
+  <div class="row ">
+    <div class="main p-5 col-md-10">
       <div class="d-flex justify-content-between mb-5">
         <div>
           <h1 class="m-0">Dashboard</h1>
@@ -14,25 +14,38 @@
           </button>
         </div>
       </div>
-      <div class="projects-grid gap-4">
-        <div class="project" v-for="project in filteredProjects" :key="project.name">
-          <a class="project_repository" v-show="project.repository" :href="project.repository" target="_blank">
-            <icon-external width="20px" height="20px" />
-          </a>
-
-          <div class="row p-4">
-            <div class="project_icon p-0">
-              <component :is="getIcon(project.type)" />
-            </div>
-            <div class="col-auto">
-              <h3 class="project_name m-0">{{project.name}}</h3>
-              <span class="project_type d-block">Unknown state</span>
-              <span class="project_type d-block">{{formatDate(project.createdAt)}}</span>
+      <div class="projects-grid row gap-4">
+        <div class="project d-grid align-items-end col-6 col-md-4 col-lg-3 p-0" v-for="project in filteredProjects" :key="project.name">
+          <div class="aspect d-flex align-items-center justify-content-center">
+            <illustration-website class="p-4"/>
+            <div class="project_icons d-flex">
+                <a v-show="project.repository" :href="project.repository" target="_blank">
+                <icon-external width="20px" height="20px" stroke="black"/>
+              </a>
+              <a @click.prevent="editToggle">
+                <icon-edit width="20px" height="20px" stroke="black"/>
+              </a>
             </div>
           </div>
+          
+          <div class="project-content row p-3 d-flex align-items-center"> 
+            <div class="project_icon p-0 col-2">
+              <component :is="getIcon(project.type)" />
+            </div>
+            <div class="col-9">
+              <h3 class="project_name m-0">{{project.name}}</h3>
+              <div class="row d-flex align-items-center">
+                <span class="project_type d-block">{{formatDate(project.createdAt)}}</span>
+              </div>
+            </div>
+            <div class="col-1">
+              <span class="project_type d-block col-2"><div class="circle"></div></span>
+            </div>
+          </div>
+          
         </div>
-        <div v-show="filteredProjects.length < projects.length" class="project project-skeletton" @click="clearFilters">
-          <div class="row p-4">
+        <div v-if="filteredProjects.length < projects.length" class="project project-skeletton d-grid align-items-end" @click="clearFilters">
+          <div class="project-content row p-4">
             <div class="project_icon p-0">
               <icon-eye-off-line />
             </div>
@@ -45,59 +58,103 @@
       </div>
     </div>
 
-    <div class="sidebar col-md-3 d-grid justify-content-center align-content-center">
+    <div class="sidebar col-md-2 d-grid justify-content-center align-content-center">
       <div class="d-grid">
         A sidebar with server's stats and actions like reboot, etc...
       </div>
     </div>
-
-
   </div>
 </template>
 
 <style lang="scss" scoped>
   .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-
     .project {
       background-color: #ffffff;
       border-radius: 25px;
-      aspect-ratio: 1;
+      -webkit-box-shadow: 0px 3px 9px 0px #000000; 
+      box-shadow: 0px 3px 5px 0px rgba($color: #000000, $alpha: 0.2);
       position: relative;
+      background: #ececf6;
 
-      .project_icon {
-        /* position: absolute; */
-        width: 4em;
-        /* background-color: ; */
+      .aspect {
+        aspect-ratio: 16/9;
       }
-
-      .project_repository {
+      
+      .project_icons {
         position: absolute;
-        right: 1em;
-        top: 1em;
+        left: 1em;
+        top: 1.3em;
         pointer-events: none;
         opacity: 0;
-        transition: opacity .3s;
+        transform: translateX(-15px);
+        transition: all .3s;
+
+        a {
+          opacity: .5;
+          transition: opacity .3s;
+        }
+
       }
 
-      .project_name {
-        text-transform: capitalize;
+      .project-content {
+        background: white;
+        border-radius: 25px;
+        box-sizing: border-box;
+        width: 100%;
+        margin: 0 auto;
+
+        .project_icon {
+        width: 2em;
+        }
+
+        .circle {
+          width: 15px;
+          height: 15px;
+          border-radius: 15px;
+          background-color: #74B566;
+          position: relative;
+
+          &::before {
+            content:'Active';
+            position: absolute;
+            top: -15px;
+            left: calc(15px/2);
+            transform: translateX(-50%);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s ease-in
+          }
+
+          &:hover::before {
+            opacity: 1;
+          }
+        }
+
+        .project_name {
+          text-transform: capitalize;
+          font-weight: 600;
+          font-size: 1.1em;
+        }
+
+        span {
+          font-size: 0.9em;
+        }
       }
 
       &:hover {
-        .project_repository {
+        .project_icons {
           pointer-events: all;
-          opacity: .5;
+          transform: translateX(0);
+          opacity: 1;
 
-          &:hover {
+          a:hover {
             opacity: 1;
           }
         }
       }
 
       &.project-skeletton {
-        opacity: 0.7;
+        opacity: 1;
         cursor: pointer;
       }
     }
@@ -167,6 +224,7 @@
       filteredProjects() {
         let searchTerm = this.searchTerm;
         let projects = [...this.projects];
+        
 
         if (searchTerm.length == 0) return projects;
 
@@ -175,6 +233,7 @@
         }
 
         projects = projects.filter(project => project.name.includes(searchTerm));
+        console.log(projects.length)
 
         return projects
       },
@@ -241,6 +300,9 @@
         this.sseStatus = this.sse.readyState
         console.log('STATS', JSON.parse(data));
       },
+      editToggle() {
+        console.log("eyslskbfnd")
+      }
     },
   }
 
