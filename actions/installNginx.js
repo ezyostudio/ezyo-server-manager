@@ -8,20 +8,17 @@ export default {
     execute: async() => {
         if (shell.which('nginx')) {
             success('Nginx is already installed');
-            return;
-        }
-
-        const { stdout, stderr, code } = exec('apt-get install nginx -y');
-
-        if (code == 0) {
-            success('Nginx is now installed');
         } else {
-            const err = stderr.trim();
-            if(err.match(/are you root\?/)) {
-                return fail('You must be root to install Nginx, relaunch the tool as sudo or run "sudo apt-get install nginx"');
+            const { stdout, stderr, code } = exec('apt-get install nginx -y');
+            if (code == 0) {
+                success('Nginx is now installed');
+            } else {
+                const err = stderr.trim();
+                if(err.match(/are you root\?/)) {
+                    return fail('You must be root to install Nginx, relaunch the tool as sudo or run "sudo apt-get install nginx"');
+                }
+                return fail('An error occurred: ', stderr.trim());
             }
-            
-            return fail('An error occurred: ', stderr.trim());
         }
 
         if (shell.which('ufw')) {
