@@ -6,6 +6,8 @@ import fs from 'fs-extra'
 import bodyParser from 'koa-bodyparser'
 import HttpError from 'http-errors';
 import cors from '@koa/cors';
+import { PassThrough } from "stream";
+import osUtils, { sysUptime } from 'os-utils';
 
 const app = new Koa();
 const router = new Router();
@@ -23,6 +25,24 @@ const defaultMeta = {
   repository: "",
   createdAt: 0,
 }
+
+let SSEClient = [];
+
+// const cpuUsage = util.promisify(osUtils.cpuUsage);
+const cpuUsage = () => new Promise((resolve) => osUtils.cpuUsage(resolve));
+const cpuFree = () => new Promise((resolve) => osUtils.cpuFree(resolve));
+setInterval(async () => {
+  if(!SSEClient.length) return;
+
+  const data = {
+    memUsage: osUtils.freememPercentage(),
+    cpuUsage: await cpuUsage(),
+    uptime: osUtils.sysUptime(),
+    processUptime: osUtils.processUptime(),
+  }
+
+  SSEClient.forEach(({stream}) => stream.write(`data: ${JSON.stringify(data)}\n\n`));
+}, 1000);
 
 router
   .get('/projects', ctx => {
@@ -68,7 +88,36 @@ router
       name: projectName,
       ...meta,
     };
-  });
+  })
+  .get('/stats', ctx => {
+    ctx.request.socket.setTimeout(0);
+    ctx.req.socket.setNoDelay(true);
+    ctx.req.socket.setKeepAlive(true);
+
+    ctx.set({
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+    });
+
+    const stream = new PassThrough();
+
+    ctx.status = 200;
+    ctx.body = stream;
+
+    const clientId = Math.random().toFixed(5) * 100000;
+
+    console.log(`Client ${clientId} connected`);
+    SSEClient.push({
+      id: clientId,
+      stream,
+    })
+
+    stream.on('close', () => {
+      console.log(`Client ${clientId} disconnected`);
+      SSEClient = SSEClient.filter(({id}) => id !== clientId);
+    })
+  })
 
 app
   .use(cors())
