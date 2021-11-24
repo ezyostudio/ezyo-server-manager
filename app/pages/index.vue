@@ -8,7 +8,7 @@
         </div>
         <div class="d-flex p-3 gap-2">
           <search-input v-model="searchTerm" />
-          <button class="py-2 px-3 d-flex align-items-center justify-content-center btn-dark text-light"
+          <button class="py-2 px-3 d-flex align-items-center justify-content-center btn-dark text-light btn-anim"
             @click.prevent="displayForm">
             <icon-github width="15px" height="15px" type="full" class="me-2" /> Add Repository
           </button>
@@ -19,7 +19,7 @@
           <div class="aspect d-flex align-items-center justify-content-center">
             <illustration-website class="p-4"/>
             <div class="project_icons d-flex">
-                <a v-show="project.repository" :href="project.repository" target="_blank">
+                <a v-show="project.repository" :href="project.repository" target="_blank" class="me-2 btn-anim">
                 <icon-external width="20px" height="20px" stroke="black"/>
               </a>
               <a @click.prevent="editToggle">
@@ -132,12 +132,16 @@
           &::before {
             content:'Active';
             position: absolute;
-            top: -15px;
+            top: -25px;
             left: calc(15px/2);
             transform: translateX(-50%);
             opacity: 0;
             pointer-events: none;
-            transition: opacity .3s ease-in
+            transition: opacity .3s ease-in;
+            background: #f1f1f1;
+            padding: .2em .4em;
+            border-radius: 5px;
+
           }
 
           &:hover::before {
@@ -186,6 +190,14 @@
       font-weight: bold;
     }
   }
+
+  .btn-anim {
+      transform: scale(1);
+      transition: transform .2s;
+      &:active {
+        transform: scale(0.9);
+      }
+    }
 
   button {
     border: none;
@@ -286,7 +298,8 @@
             autocapitalize: 'off'
           },
           showCancelButton: true,
-          confirmButtonText: 'Look up',
+          confirmButtonText: 'Add repo',
+          confirmButtonColor: '#59B2F2',
           showLoaderOnConfirm: true,
           preConfirm: (repository) => {
             return this.$api.$post("/projects", {
@@ -332,8 +345,8 @@
           ...JSON.parse(data)
         }
       },
-      editToggle() {
-        console.log("eyslskbfnd")
+      editToggle(e) {
+        console.log(e)
       }
     },
   }
