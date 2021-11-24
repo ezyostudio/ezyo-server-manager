@@ -69,7 +69,7 @@ export default {
 
             let { stdout, stderr, code } = exec("service nginx reload");
             if (code == 0) {
-                success(`Everthing ready, make sure to add an A record to ${await publicIp.v4()}`);
+                success(`Everthing ready, make sure to add an A record targetting ${await publicIp.v4()}`);
             } else {
                 fail(`An unexpected error occured\nTry "nginx -t" to debug or leave an issue\n`, stderr)
             }
