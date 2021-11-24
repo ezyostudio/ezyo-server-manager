@@ -44,7 +44,6 @@ export default {
 
     if (app.path && app.domain) {
       let nginxConfig = fs.readFileSync(path.join(__dirname, `../nginx/static.template`), 'utf8');
-      console.log(nginxConfig);
       for (const [key, value] of Object.entries(app)) {
         const reg = new RegExp(`{{${key}}}`, 'g')
         nginxConfig = nginxConfig.replace(reg, value);
