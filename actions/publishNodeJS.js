@@ -10,7 +10,7 @@ import {fileURLToPath} from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-module.exports = {
+export default {
     title: 'Publish a NodeJS app',
     description: 'Generate a Nginx proxy, a PM2 process and allow port for a Nodejs app',
     value: 'publishNodeJS',
