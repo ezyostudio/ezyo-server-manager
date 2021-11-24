@@ -4,7 +4,7 @@
       <div class="d-flex justify-content-between mb-5">
         <div>
           <h1 class="m-0">Dashboard</h1>
-          <h2 class="m-0 text-muted">Projects</h2>
+          <h2 class="m-0 text-muted">{{sseStatusString}}</h2>
         </div>
         <div class="d-flex p-3 gap-2">
           <search-input v-model="searchTerm" />
@@ -151,10 +151,17 @@
       return {
         projects: [],
         searchTerm: "",
+        sse: null,
+        sseStatus: 2,
       }
     },
     mounted() {
-      window.vueInstance = this
+      window.vueInstance = this;
+
+      this.sse = new EventSource(`${this.$api.defaults.baseURL}stats`);
+      this.sseStatus = this.sse.readyState
+      this.sse.onerror = this.sseError;
+      this.sse.onmessage = this.sseMessage;
     },
     computed: {
       filteredProjects() {
@@ -170,6 +177,16 @@
         projects = projects.filter(project => project.name.includes(searchTerm));
 
         return projects
+      },
+      sseStatusString() {
+        switch (this.sseStatus) {
+          case 0:
+            return 'Connecting';
+          case 1:
+            return 'Connected';
+          case 2:
+            return 'Disconnected';
+        }
       }
     },
     methods: {
@@ -215,7 +232,15 @@
       },
       clearFilters() {
         this.searchTerm = ''
-      }
+      },
+      sseError(...args) {
+        this.sseStatus = this.sse.readyState
+        console.error(...args);
+      },
+      sseMessage({data}) {
+        this.sseStatus = this.sse.readyState
+        console.log('STATS', JSON.parse(data));
+      },
     },
   }
 

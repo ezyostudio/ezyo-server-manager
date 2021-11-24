@@ -16,6 +16,7 @@
     "nuxt": "^2.15.7",
     "sass": "1.42.1",
     "sass-loader": "10.1.1",
+    "vue-svg-gauge": "^1.2.1",
     "vue-sweetalert2": "^5.0.2"
   },
   "devDependencies": {
