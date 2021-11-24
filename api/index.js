@@ -42,7 +42,7 @@ setInterval(async () => {
   }
 
   SSEClient.forEach(({stream}) => stream.write(`data: ${JSON.stringify(data)}\n\n`));
-}, 1000);
+}, 250);
 
 router
   .get('/projects', ctx => {
@@ -71,6 +71,7 @@ router
     console.log(clone);
 
     if(clone.code !== 0) {
+      
       ctx.body = HttpError(500, clone.stderr.trim());
       return;
     }

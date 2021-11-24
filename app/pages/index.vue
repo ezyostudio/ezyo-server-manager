@@ -27,8 +27,8 @@
               </a>
             </div>
           </div>
-          
-          <div class="project-content row p-3 d-flex align-items-center"> 
+
+          <div class="project-content row p-3 d-flex align-items-center">
             <div class="project_icon p-0 col-2">
               <component :is="getIcon(project.type)" />
             </div>
@@ -42,7 +42,7 @@
               <span class="project_type d-block col-2"><div class="circle"></div></span>
             </div>
           </div>
-          
+
         </div>
         <div v-if="filteredProjects.length < projects.length" class="project project-skeletton d-grid align-items-end" @click="clearFilters">
           <div class="project-content row p-4">
@@ -60,7 +60,22 @@
 
     <div class="sidebar col-md-2 d-grid justify-content-center align-content-center">
       <div class="d-grid">
-        A sidebar with server's stats and actions like reboot, etc...
+        <client-only>
+          <VueSvgGauge
+            :start-angle="0"
+            :end-angle="360"
+            :value="stats.cpuUsage"
+            :separator-step="0"
+            :min="0"
+            :max="1"
+            gauge-color="#59b2f2"
+            :scale-interval="0"
+          >
+            <span class="gauge_text">CPU</span>>
+          </VueSvgGauge>
+        </client-only>
+        Server uptime: {{$dayjs(Date.now() - stats.uptime * 1000).fromNow()}}
+        Manager uptime: {{$dayjs(Date.now() - stats.processUptime * 1000).fromNow()}}
       </div>
     </div>
   </div>
@@ -71,7 +86,7 @@
     .project {
       background-color: #ffffff;
       border-radius: 25px;
-      -webkit-box-shadow: 0px 3px 9px 0px #000000; 
+      -webkit-box-shadow: 0px 3px 9px 0px #000000;
       box-shadow: 0px 3px 5px 0px rgba($color: #000000, $alpha: 0.2);
       position: relative;
       background: #ececf6;
@@ -79,7 +94,7 @@
       .aspect {
         aspect-ratio: 16/9;
       }
-      
+
       .project_icons {
         position: absolute;
         left: 1em;
@@ -162,6 +177,14 @@
 
   .sidebar {
     background-color: #ececf6;
+
+    .gauge_text {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      place-content: center;
+      font-weight: bold;
+    }
   }
 
   button {
@@ -210,6 +233,12 @@
         searchTerm: "",
         sse: null,
         sseStatus: 2,
+        stats: {
+          cpuUsage: 0,
+          memUsage: 0,
+          processUptime: 0,
+          uptime: 0,
+        }
       }
     },
     mounted() {
@@ -224,7 +253,7 @@
       filteredProjects() {
         let searchTerm = this.searchTerm;
         let projects = [...this.projects];
-        
+
 
         if (searchTerm.length == 0) return projects;
 
@@ -298,7 +327,10 @@
       },
       sseMessage({data}) {
         this.sseStatus = this.sse.readyState
-        console.log('STATS', JSON.parse(data));
+        this.stats = {
+          ...this.stats,
+          ...JSON.parse(data)
+        }
       },
       editToggle() {
         console.log("eyslskbfnd")
