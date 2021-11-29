@@ -7,7 +7,7 @@ import bodyParser from 'koa-bodyparser'
 import HttpError from 'http-errors';
 import cors from '@koa/cors';
 import { PassThrough } from "stream";
-import osUtils, { sysUptime } from 'os-utils';
+import osUtils from 'os-utils';
 
 const app = new Koa();
 const router = new Router();
@@ -28,9 +28,7 @@ const defaultMeta = {
 
 let SSEClient = [];
 
-// const cpuUsage = util.promisify(osUtils.cpuUsage);
 const cpuUsage = () => new Promise((resolve) => osUtils.cpuUsage(resolve));
-const cpuFree = () => new Promise((resolve) => osUtils.cpuFree(resolve));
 setInterval(async () => {
   if(!SSEClient.length) return;
 
@@ -106,7 +104,7 @@ router
     ctx.status = 200;
     ctx.body = stream;
 
-    const clientId = Math.random().toFixed(5) * 100000;
+    const clientId = Date.now() + Math.floor(Math.random() * 100);
 
     console.log(`Client ${clientId} connected`);
     SSEClient.push({
