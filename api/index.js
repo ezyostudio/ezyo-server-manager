@@ -33,14 +33,14 @@ setInterval(async () => {
   if(!SSEClient.length) return;
 
   const data = {
-    memUsage: osUtils.freememPercentage(),
+    memUsage: 1 - osUtils.freememPercentage(),
     cpuUsage: await cpuUsage(),
     uptime: osUtils.sysUptime(),
     processUptime: osUtils.processUptime(),
   }
 
   SSEClient.forEach(({stream}) => stream.write(`data: ${JSON.stringify(data)}\n\n`));
-}, 250);
+}, 3000);
 
 router
   .get('/projects', ctx => {
@@ -87,6 +87,10 @@ router
       name: projectName,
       ...meta,
     };
+  })
+  .put('/projects', ctx => {
+    console.log(ctx.body)
+    ctx.body = "hello"
   })
   .get('/stats', ctx => {
     ctx.request.socket.setTimeout(0);
