@@ -1,7 +1,6 @@
 import Koa from 'koa'
 import localtunnel from 'localtunnel';
 import bodyParser from 'koa-bodyparser';
-import { gitPull } from '../actions/gitPull.js';
 import shell from 'shelljs';
 import crypto from 'crypto';
 import * as utils from './utils.js';
