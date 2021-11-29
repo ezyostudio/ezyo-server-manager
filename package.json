@@ -10,11 +10,13 @@
     "scripts": {
         "start": "pm2 start ecosystem.config.cjs",
         "dev:api": "nodemon api/index.js",
+        "dev:webhook": "nodemon api/github.js",
         "dev:app": "cd app && yarn dev",
         "dashboard": "npm-run-all --parallel dev:*"
     },
     "dependencies": {
         "@koa/cors": "^3.1.0",
+        "dotenv": "^10.0.0",
         "fs-extra": "^10.0.0",
         "kleur": "^4.1.4",
         "koa": "^2.13.4",
