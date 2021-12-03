@@ -1,6 +1,6 @@
 <template>
   <div class="row layout p-0 m-0">
-    <Modal :show="modalStatus" @close="modalStatus=false" :project="modalProject" @sendUpdate="$fetch"/>
+    <Modal :show="modalStatus" @close="modalStatus=false" :project="modalProject" @sendUpdate="onUpdate"/>
     <div class="main p-5 col-md-9">
       <div class="d-flex justify-content-between mb-5">
         <div>
@@ -9,7 +9,7 @@
             <h2 class="m-0 text-muted me-2">{{sseStatusString.text}}</h2>
             <div class="circle" :class="sseStatusString.color"></div>
           </div>
-          
+
         </div>
         <div class="d-flex p-3 gap-2">
           <search-input v-model="searchTerm"/>
@@ -88,7 +88,7 @@
                   <span class="gauge_text">CPU</span>>
                 </VueSvgGauge>
             </div>
-  
+
             <div class="col-md-6">
                 <VueSvgGauge
                 :start-angle="0"
@@ -183,12 +183,12 @@ export default {
           return {
             text:"Connected",
             color: "green"
-            };;
+            };
         case 2:
           return {
             text:"Disconnected",
             color: "red"
-            };;
+          };
       }
     },
   },
@@ -210,14 +210,7 @@ export default {
           });
         },
         allowOutsideClick: () => !this.$swal.isLoading(),
-      }); //.then((result) => {
-      //   if (result.isConfirmed) {
-      //     this.$swal.fire({
-      //       title: `${result.value.login}'s avatar`,
-      //       imageUrl: result.value.avatar_url
-      //     })
-      //   }
-      // })
+      });
     },
     getIcon(projectType) {
       let iconName = "question-line";
@@ -255,6 +248,9 @@ export default {
     toggleModal() {
       return true;
     },
+    onUpdate(updatedProject) {
+      this.projects = this.projects.map((project) => project.path == updatedProject.path ? updatedProject : project);
+    }
   },
 };
 </script>

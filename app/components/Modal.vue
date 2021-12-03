@@ -6,7 +6,7 @@
                 <button class="close" @click.prevent="closeModal">
                     <icon-x-circle width="30" height="30" />
                 </button>
-                
+
             </div>
             <h2 class="text-center">{{mutableProject.name}}</h2>
             <div class="mb-3">
@@ -76,7 +76,7 @@
         }
 
     }
-    
+
     &.active {
         backdrop-filter: blur(10px) opacity(1);
         opacity: 1;
@@ -120,10 +120,10 @@ export default {
             this.$emit('close');
         },
         async sendUpdate() {
-            await this.$api.$put("/projects", {
+            const updatedProject = await this.$api.$put("/projects", {
               data: this.mutableProject
             })
-            this.$emit("sendUpdate")
+            this.$emit("sendUpdate", updatedProject)
             this.closeModal()
         }
     }
