@@ -89,11 +89,19 @@ router
     };
   })
   .put('/projects', ctx => {
-    const meta = ctx.request.body.data
+    const {name, path, ...meta} = ctx.request.body.data;
+    if(!fs.existsSync(path)) {
+      ctx.status = 500;
+      ctx.body = { 
+        error: {
+          message: "The repository do not exist on the server"
+        }
+      };
+    }
 
-    fs.writeJSONSync(getMetaFilePath(meta.name), meta);
+    fs.writeJSONSync(getMetaFilePath(name), meta);
 
-    ctx.body = "hello"
+    ctx.body = { name, path, ...meta };
   })
   .get('/stats', ctx => {
     ctx.request.socket.setTimeout(0);
