@@ -89,7 +89,10 @@ router
     };
   })
   .put('/projects', ctx => {
-    console.log(ctx.body)
+    const meta = ctx.request.body.data
+
+    fs.writeJSONSync(getMetaFilePath(meta.name), meta);
+
     ctx.body = "hello"
   })
   .get('/stats', ctx => {
