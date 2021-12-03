@@ -119,10 +119,12 @@ export default {
             console.log("closing")
             this.$emit('close');
         },
-        sendUpdate() {
-            this.$api.$put("/projects", {
+        async sendUpdate() {
+            await this.$api.$put("/projects", {
               data: this.mutableProject
             })
+            this.$emit("sendUpdate")
+            this.closeModal()
         }
     }
 }

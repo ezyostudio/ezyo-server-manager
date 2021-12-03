@@ -1,14 +1,18 @@
 <template>
   <div class="row layout p-0 m-0">
-    <Modal :show="modalStatus" @close="modalStatus=false" :project="modalProject" />
+    <Modal :show="modalStatus" @close="modalStatus=false" :project="modalProject" @sendUpdate="$fetch"/>
     <div class="main p-5 col-md-9">
       <div class="d-flex justify-content-between mb-5">
         <div>
           <h1 class="m-0">Dashboard</h1>
-          <h2 class="m-0 text-muted">{{sseStatusString}}</h2>
+          <div class="d-flex align-items-center">
+            <h2 class="m-0 text-muted me-2">{{sseStatusString.text}}</h2>
+            <div class="circle" :class="sseStatusString.color"></div>
+          </div>
+          
         </div>
         <div class="d-flex p-3 gap-2">
-          <search-input v-model="searchTerm" />
+          <search-input v-model="searchTerm"/>
           <button class="py-2 px-3 d-flex align-items-center justify-content-center btn-dark text-light btn-anim"
             @click.prevent="displayForm">
             <icon-github width="15px" height="15px" type="full" class="me-2" /> Add Repository
@@ -118,268 +122,276 @@
 
 
 <script>
-  export default {
-    async fetch() {
-      const projects = await this.$api.$get("/projects")
+export default {
+  async fetch() {
+    const projects = await this.$api.$get("/projects");
+    projects.sort((a, b) => b.createdAt - a.createdAt);
+    this.projects = projects;
+  },
+  data() {
+    return {
+      projects: [],
+      modalProject: null,
+      modalStatus: false,
+      searchTerm: "",
+      sse: null,
+      sseStatus: 2,
+      stats: {
+        cpuUsage: 0,
+        memUsage: 0,
+        processUptime: 0,
+        uptime: 0,
+      },
+    };
+  },
+  mounted() {
+    window.vueInstance = this;
 
-      projects.sort((a, b) => b.createdAt - a.createdAt);
+    this.sse = new EventSource(`${this.$api.defaults.baseURL}stats`);
+    this.sseStatus = this.sse.readyState;
+    this.sse.onerror = this.sseError;
+    this.sse.onmessage = this.sseMessage;
+  },
+  computed: {
+    filteredProjects() {
+      let searchTerm = this.searchTerm;
+      let projects = [...this.projects];
 
-      this.projects = projects;
+      if (searchTerm.length == 0) return projects;
+
+      if (searchTerm.startsWith("type:")) {
+        return projects.filter((project) =>
+          project.type.includes(searchTerm.replace("type:", ""))
+        );
+      }
+
+      projects = projects.filter((project) =>
+        project.name.includes(searchTerm)
+      );
+      console.log(projects.length);
+
+      return projects;
     },
-    data() {
-      return {
-        projects: [],
-        modalProject: null,
-        modalStatus: false,
-        searchTerm: "",
-        sse: null,
-        sseStatus: 2,
-        stats: {
-          cpuUsage: 0,
-          memUsage: 0,
-          processUptime: 0,
-          uptime: 0,
-        }
+    sseStatusString() {
+      switch (this.sseStatus) {
+        case 0:
+          return {
+            text:"Connecting",
+            color: "orange"
+            };
+        case 1:
+          return {
+            text:"Connected",
+            color: "green"
+            };;
+        case 2:
+          return {
+            text:"Disconnected",
+            color: "red"
+            };;
       }
     },
-    mounted() {
-      window.vueInstance = this;
-
-      this.sse = new EventSource(`${this.$api.defaults.baseURL}stats`);
-      this.sseStatus = this.sse.readyState
-      this.sse.onerror = this.sseError;
-      this.sse.onmessage = this.sseMessage;
+  },
+  methods: {
+    displayForm: function () {
+      this.$swal.fire({
+        title: "Submit your Github repository URL",
+        input: "text",
+        inputAttributes: {
+          autocapitalize: "off",
+        },
+        showCancelButton: true,
+        confirmButtonText: "Add repo",
+        confirmButtonColor: "#59B2F2",
+        showLoaderOnConfirm: true,
+        preConfirm: (repository) => {
+          return this.$api.$post("/projects", {
+            repository,
+          });
+        },
+        allowOutsideClick: () => !this.$swal.isLoading(),
+      }); //.then((result) => {
+      //   if (result.isConfirmed) {
+      //     this.$swal.fire({
+      //       title: `${result.value.login}'s avatar`,
+      //       imageUrl: result.value.avatar_url
+      //     })
+      //   }
+      // })
     },
-    computed: {
-      filteredProjects() {
-        let searchTerm = this.searchTerm;
-        let projects = [...this.projects];
-
-
-        if (searchTerm.length == 0) return projects;
-
-        if (searchTerm.startsWith('type:')) {
-          return projects.filter(project => project.type.includes(searchTerm.replace('type:', '')));
-        }
-
-        projects = projects.filter(project => project.name.includes(searchTerm));
-        console.log(projects.length)
-
-        return projects
-      },
-      sseStatusString() {
-        switch (this.sseStatus) {
-          case 0:
-            return 'Connecting';
-          case 1:
-            return 'Connected';
-          case 2:
-            return 'Disconnected';
-        }
-      },
-    },
-    methods: {
-      displayForm: function () {
-        this.$swal.fire({
-          title: 'Submit your Github repository URL',
-          input: 'text',
-          inputAttributes: {
-            autocapitalize: 'off'
-          },
-          showCancelButton: true,
-          confirmButtonText: 'Add repo',
-          confirmButtonColor: '#59B2F2',
-          showLoaderOnConfirm: true,
-          preConfirm: (repository) => {
-            return this.$api.$post("/projects", {
-              repository
-            })
-          },
-          allowOutsideClick: () => !this.$swal.isLoading()
-        }) //.then((result) => {
-        //   if (result.isConfirmed) {
-        //     this.$swal.fire({
-        //       title: `${result.value.login}'s avatar`,
-        //       imageUrl: result.value.avatar_url
-        //     })
-        //   }
-        // })
-      },
-      getIcon(projectType) {
-        let iconName = 'question-line';
-        if (projectType.startsWith('node')) {
-          iconName = 'nodejs';
-        }
-
-        if (projectType.startsWith('static')) {
-          iconName = 'folder';
-        }
-
-        return 'icon-' + iconName;
-      },
-      formatDate(date) {
-        return date ? new Date(date).toLocaleDateString() : '';
-      },
-      clearFilters() {
-        this.searchTerm = "";
-      },
-      sseError(...args) {
-        this.sseStatus = this.sse.readyState
-        console.error(...args);
-      },
-      sseMessage({data}) {
-        this.sseStatus = this.sse.readyState
-        this.stats = {
-          ...this.stats,
-          ...JSON.parse(data)
-        }
-      },
-      editToggle(project) {
-        this.modalProject = project;
-        this.modalStatus = true
-      },
-      toggleModal() {
-        return true
+    getIcon(projectType) {
+      let iconName = "question-line";
+      if (projectType.startsWith("node")) {
+        iconName = "nodejs";
       }
-      
-    },
-  }
 
+      if (projectType.startsWith("static")) {
+        iconName = "folder";
+      }
+
+      return "icon-" + iconName;
+    },
+    formatDate(date) {
+      return date ? new Date(date).toLocaleDateString() : "";
+    },
+    clearFilters() {
+      this.searchTerm = "";
+    },
+    sseError(...args) {
+      this.sseStatus = this.sse.readyState;
+      console.error(...args);
+    },
+    sseMessage({ data }) {
+      this.sseStatus = this.sse.readyState;
+      this.stats = {
+        ...this.stats,
+        ...JSON.parse(data),
+      };
+    },
+    editToggle(project) {
+      this.modalProject = project;
+      this.modalStatus = true;
+    },
+    toggleModal() {
+      return true;
+    },
+  },
+};
 </script>
 
 <style lang="scss" scoped>
-  .projects-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1em;
 
-    .project {
-      background-color: #ffffff;
+.projects-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1em;
+
+  .project {
+    background-color: #ffffff;
+    border-radius: 25px;
+    -webkit-box-shadow: 0px 3px 9px 0px #000000;
+    box-shadow: 0px 3px 5px 0px rgba($color: #000000, $alpha: 0.2);
+    position: relative;
+    background: #ececf6;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+
+    .aspect {
+      aspect-ratio: 16/9;
+    }
+
+    .project_icons {
+      position: absolute;
+      left: 1em;
+      top: 1.3em;
+      pointer-events: none;
+      opacity: 0;
+      transform: translateX(-15px);
+      transition: all 0.3s;
+
+      a {
+        opacity: 0.5;
+        transition: opacity 0.3s;
+      }
+    }
+
+    .project-content {
+      background: white;
       border-radius: 25px;
-      -webkit-box-shadow: 0px 3px 9px 0px #000000;
-      box-shadow: 0px 3px 5px 0px rgba($color: #000000, $alpha: 0.2);
-      position: relative;
-      background: #ececf6;
-      display: flex;
-      justify-content: space-between;
-      flex-direction: column;
+      box-sizing: border-box;
+      width: 100%;
+      margin: 0 auto;
 
-      .aspect {
-        aspect-ratio: 16/9;
+      .project_icon {
+        width: 2em;
       }
 
+      .circle {
+        &::before {
+          content: "Active";
+          position: absolute;
+          top: -25px;
+          left: calc(15px / 2);
+          transform: translateX(-50%);
+          opacity: 0;
+          pointer-events: none;
+          transition: opacity 0.3s ease-in;
+          background: #f1f1f1;
+          padding: 0.2em 0.4em;
+          border-radius: 5px;
+        }
+
+        &:hover::before {
+          opacity: 1;
+        }
+      }
+
+      .project_name {
+        text-transform: capitalize;
+        font-weight: 600;
+        font-size: 1.1em;
+      }
+
+      span {
+        font-size: 0.9em;
+      }
+    }
+
+    &:hover {
       .project_icons {
-        position: absolute;
-        left: 1em;
-        top: 1.3em;
-        pointer-events: none;
-        opacity: 0;
-        transform: translateX(-15px);
-        transition: all .3s;
+        pointer-events: all;
+        transform: translateX(0);
+        opacity: 1;
 
         a {
-          opacity: .5;
-          transition: opacity .3s;
+          cursor: pointer;
         }
 
-      }
-
-      .project-content {
-        background: white;
-        border-radius: 25px;
-        box-sizing: border-box;
-        width: 100%;
-        margin: 0 auto;
-
-        .project_icon {
-        width: 2em;
-        }
-
-        .circle {
-          width: 15px;
-          height: 15px;
-          border-radius: 15px;
-          background-color: #74B566;
-          position: relative;
-
-          &::before {
-            content:'Active';
-            position: absolute;
-            top: -25px;
-            left: calc(15px/2);
-            transform: translateX(-50%);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity .3s ease-in;
-            background: #f1f1f1;
-            padding: .2em .4em;
-            border-radius: 5px;
-
-          }
-
-          &:hover::before {
-            opacity: 1;
-          }
-        }
-
-        .project_name {
-          text-transform: capitalize;
-          font-weight: 600;
-          font-size: 1.1em;
-        }
-
-        span {
-          font-size: 0.9em;
-        }
-      }
-
-      &:hover {
-        .project_icons {
-          pointer-events: all;
-          transform: translateX(0);
+        a:hover {
           opacity: 1;
-          
-          a {
-            cursor: pointer;
-          }
-
-          a:hover {
-            opacity: 1;
-          }
         }
       }
+    }
 
-      &.project-skeletton {
-        opacity: 1;
-        cursor: pointer;
-      }
+    &.project-skeletton {
+      opacity: 1;
+      cursor: pointer;
     }
   }
+}
 
-  .sidebar {
-    background-color: #ececf6;
+.sidebar {
+  background-color: #ececf6;
 
-    .gauge_text {
-      width: 100%;
-      height: 100%;
-      display: grid;
-      place-content: center;
-      font-weight: bold;
-    }
+  .gauge_text {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-content: center;
+    font-weight: bold;
   }
+}
 
-  .btn-anim {
-      transform: scale(1);
-      transition: transform .2s;
-      &:active {
-        transform: scale(0.9);
-      }
-    }
-
-  .projects-table {
-    .project-name {
-      text-transform: capitalize;
-    }
+.btn-anim {
+  transform: scale(1);
+  transition: transform 0.2s;
+  &:active {
+    transform: scale(0.9);
   }
+}
 
+.projects-table {
+  .project-name {
+    text-transform: capitalize;
+  }
+}
+
+.red {
+    background: red;
+}
+
+.orange {
+    background: orange;
+}
 </style>

@@ -26,7 +26,7 @@ export default {
     .input-container {
         background: #FFFFFF;
         border-radius: 20px;
-        min-width: 30%;
+        min-width: 15vw;
         box-sizing: border-box;
 
         position: relative;
